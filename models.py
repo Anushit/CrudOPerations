@@ -1,11 +1,24 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from .managers import *
 
-# Create your models here.
-class artist(models.Model):
-    Name = models.CharField(max_length=100)
-    description = models.TextField(max_length=100)
-    image = models.FileField(blank=False,null=True,upload_to='img/')
-    created_at =models.DateTimeField(auto_now_add=True)
+
+class User(AbstractUser):
+    username = None
+    email = models.EmailField(max_length=255, unique=True)
+    mobile = models.CharField(max_length=13, null=True, blank=True, unique=True)
+    is_mobile = models.BooleanField(default=False)
+    is_email = models.BooleanField(default=False)
+    key = models.TextField(max_length=20000, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    USERNAME_FIELD = 'email'
+
+    REQUIRED_FIELDS = ['mobile', 'updated_at', 'is_mobile', 'is_email', 'key']
+    objects = CustomUserManager()
+
+    def _str_(self):
+        return self.email
+
     class Meta:
-        db_table = "Crud_artist"
+        verbose_name_plural = "User"

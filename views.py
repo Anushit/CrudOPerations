@@ -1,28 +1,24 @@
-from .models import artist
-from .serializers import ArtistSerializer
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser,FormParser
+from .serializers import AuthUserSerializer
+from rest_framework.decorators import api_view
+from .forms import *
+from datetime import datetime
+from django.core.paginator import Paginator
 
-class CrudSerializerView(APIView):
-    parser_classes = (MultiPartParser,FormParser)
 
-    def get(self,request):
-        artobj = artist.objects.all()
-        artserializerobj = ArtistSerializer(artobj,many=True)
-        return Response(artserializerobj.data)
-
-    def post(self, request, *args, **kwargs):
-        serializeobj = ArtistSerializer(data=request.data)
-        if serializeobj.is_valid():
-            serializeobj.save()
-            return Response(serializeobj.data, status=status.HTTP_202_ACCEPTED)
+@api_view(['POST'], )
+def UserCreateAPIView(request):
+    form = UserRegisterForm(data=request.POST)
+    print(form)
+    if form.is_valid():
+        serializer = AuthUserSerializer(data=form.cleaned_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'successfully signup'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializeobj.errors, status=status.HTTP_400_BAD_REQUEST)
+            data = {"data": serializer._errors}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-
+    data = {'data': form._errors}
+    return Response(data, status=status.HTTP_400_BAD_REQUEST)
